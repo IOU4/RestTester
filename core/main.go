@@ -1,21 +1,38 @@
 package core
 
 import (
+	"encoding/json"
+	"fmt"
 	"io"
-	"log"
 	"net/http"
+	"strings"
 )
 
 func Proceed(test RestTestRequest) {
-	ss := GetRestTest(test)
-	endpoints := []string{ss.Url.String()}
+	testObj := GetRestTest(test)
+	endpoints := []string{testObj.Url.String()}
 	response, err := http.Get(endpoints[0])
 	if err != nil {
 		panic(err)
 	}
-	data, err := io.ReadAll(response.Body)
+	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		panic(err.Error())
 	}
-	log.Println("data:", string(data))
+	bodyMatch := string(body) == string([]byte(testObj.Body))
+	statusMatch := getStatusNumber(response.Status) == testObj.Status
+	result := RestTestResult{BodyMatch: bodyMatch, StatusMatch: statusMatch}
+	printResult(result)
+}
+
+func getStatusNumber(rawStatus string) string {
+	return strings.Split(rawStatus, " ")[0]
+}
+
+func printResult(result RestTestResult) {
+	json, err := json.Marshal(result)
+	if err != nil {
+		panic("error encoding json")
+	}
+	fmt.Println(string(json))
 }

@@ -15,6 +15,6 @@ type RestTest struct {
 }
 
 type RestTestResult struct {
-	statusMatch bool
-	bodyMatch   bool
+	StatusMatch bool `json:"satausMatch"`
+	BodyMatch   bool `json:"bodyMatch"`
 }
