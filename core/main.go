@@ -8,8 +8,8 @@ import (
 	"strings"
 )
 
-func Proceed(test RestTestRequest) {
-	testObj := GetRestTest(test)
+func Proceed(request RestTestRequest) {
+	testObj := request.GetRestTest()
 	endpoints := []string{testObj.Url.String()}
 	response, err := http.Get(endpoints[0])
 	if err != nil {
@@ -19,7 +19,7 @@ func Proceed(test RestTestRequest) {
 	if err != nil {
 		panic(err.Error())
 	}
-	bodyMatch := string(body) == string([]byte(testObj.Body))
+	bodyMatch := string(body) == testObj.Body
 	statusMatch := getStatusNumber(response.Status) == testObj.Status
 	result := RestTestResult{BodyMatch: bodyMatch, StatusMatch: statusMatch}
 	printResult(result)

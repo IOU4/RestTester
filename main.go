@@ -1,10 +1,10 @@
 package main
 
 import (
-	"ou.emad/cli"
-	"ou.emad/core"
+	"ou.emad/server"
 )
 
 func main() {
-	core.Proceed(cli.GetRestTestRequest())
+	// core.Proceed(cli.GetRestTestRequest())
+	server.Serve()
 }
