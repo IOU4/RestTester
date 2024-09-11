@@ -2,21 +2,22 @@ package cli
 
 import (
 	"fmt"
-	"os"
-
 	"ou.emad/core"
 )
 
-func GetRestTestRequest() core.RestTestRequest {
-	args := os.Args
+func Run(args []string) error {
 	if len(args) != 4 {
-		fmt.Println("invalid argument number:", len(args))
 		printUsage()
-		panic(1)
+		return fmt.Errorf("invalid argument number: %d\n", len(args))
 	}
+	core.RunTest(GetRestTestRequest(args))
+	return nil
+}
+
+func GetRestTestRequest(args []string) core.RestTestRequest {
 	return core.RestTestRequest{Url: args[1], Status: args[2], Body: args[3]}
 }
 
 func printUsage() {
-	fmt.Println(` usage: rest-tester <url> <expectedStatus> <expectedBody> `)
+	fmt.Println(`usage: rest-tester <url> <expectedStatus> <expectedBody>`)
 }

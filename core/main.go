@@ -1,38 +1,37 @@
 package core
 
 import (
-	"encoding/json"
-	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strings"
+	"time"
 )
 
-func Proceed(request RestTestRequest) {
-	testObj := request.GetRestTest()
-	endpoints := []string{testObj.Url.String()}
-	response, err := http.Get(endpoints[0])
+func RunTest(request RestTestRequest) (*RestTestResult, error) {
+	log.Println("running test for: {}", request)
+	testObj, err := request.GetRestTest()
 	if err != nil {
-		panic(err)
+		return nil, err
+	}
+	took := time.Now()
+	response, err := http.Get(testObj.Url.String())
+	if err != nil {
+		return nil, err
 	}
 	body, err := io.ReadAll(response.Body)
 	if err != nil {
-		panic(err.Error())
+		return nil, err
 	}
+	log.Printf("after %vms, got reponse status: %v and response content: %v\n",
+		time.Now().Sub(took).Milliseconds(),
+		response.Status, response.Header.Get("Content-Type"))
 	bodyMatch := string(body) == testObj.Body
 	statusMatch := getStatusNumber(response.Status) == testObj.Status
-	result := RestTestResult{BodyMatch: bodyMatch, StatusMatch: statusMatch}
-	printResult(result)
+	result := &RestTestResult{BodyMatch: bodyMatch, StatusMatch: statusMatch}
+	return result, nil
 }
 
 func getStatusNumber(rawStatus string) string {
 	return strings.Split(rawStatus, " ")[0]
-}
-
-func printResult(result RestTestResult) {
-	json, err := json.Marshal(result)
-	if err != nil {
-		panic("error encoding json")
-	}
-	fmt.Println(string(json))
 }

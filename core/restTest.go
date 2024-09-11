@@ -1,14 +1,15 @@
 package core
 
 import (
+	"errors"
 	"net/url"
 	"regexp"
 )
 
 type RestTestRequest struct {
-	Url    string
-	Status string
-	Body   string
+	Url    string `json:"url"`
+	Status string `json:"status"`
+	Body   string `json:"body"`
 }
 
 type RestTest struct {
@@ -22,27 +23,34 @@ type RestTestResult struct {
 	BodyMatch   bool `json:"bodyMatch"`
 }
 
-func getUrl(rawUrl string) *url.URL {
+func getUrl(rawUrl string) (*url.URL, error) {
 	urlPattern := regexp.MustCompile(`((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+(:[0-9]+)?|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w\-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?)`)
 	if !urlPattern.MatchString(rawUrl) {
-		panic("invalid url: " + rawUrl)
+		return nil, errors.New("invalid url: " + rawUrl)
 	}
-
 	parsedUrl, err := url.Parse(rawUrl)
 	if err != nil {
-		panic("couldn't parse url")
+		return nil, err
 	}
-	return parsedUrl
+	return parsedUrl, nil
 }
 
 func getStatus(rawStatus string) string {
 	statusPattern := regexp.MustCompile(`[12345]{\d}{2}`)
 	if statusPattern.MatchString(rawStatus) {
-		panic("invalid status")
+		errors.New("invalid status")
 	}
 	return rawStatus
 }
 
-func (test *RestTestRequest) GetRestTest() RestTest {
-	return RestTest{Url: getUrl(test.Url), Status: getStatus(test.Status), Body: test.Body}
+func (test *RestTestRequest) GetRestTest() (*RestTest, error) {
+	url, err := getUrl(test.Url)
+	if err != nil {
+		return nil, err
+	}
+	return &RestTest{Url: url, Status: getStatus(test.Status), Body: test.Body}, nil
+}
+
+type RestTestOutput interface {
+	Output()
 }
