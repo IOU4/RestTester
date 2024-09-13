@@ -2,6 +2,9 @@ package cli
 
 import (
 	"fmt"
+	"log"
+	"reflect"
+
 	"ou.emad/core"
 )
 
@@ -10,7 +13,11 @@ func Run(args []string) error {
 		printUsage()
 		return fmt.Errorf("invalid argument number: %d\n", len(args))
 	}
-	core.RunTest(GetRestTestRequest(args))
+	result, err := core.RunTest(GetRestTestRequest(args))
+	if err != nil {
+		return err
+	}
+	printResult(*result)
 	return nil
 }
 
@@ -20,4 +27,13 @@ func GetRestTestRequest(args []string) core.RestTestRequest {
 
 func printUsage() {
 	fmt.Println(`usage: rest-tester <url> <expectedStatus> <expectedBody>`)
+}
+
+func printResult(result core.RestTestResult) {
+	log.Println("test result:")
+	v := reflect.ValueOf(result)
+	for i := 0; i < v.NumField(); i++ {
+		fieldName := v.Type().Field(i).Name
+		fmt.Printf("%v: %v\n", fieldName, v.Field(i))
+	}
 }

@@ -14,7 +14,7 @@ func main() {
 		log.Println("staring server ...")
 		server.Run()
 	} else {
-		log.Println("running rest tester with args: ", args)
+		log.Println("running rest tester for cli args ...")
 		cli.Run(args)
 	}
 }

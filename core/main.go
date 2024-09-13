@@ -9,7 +9,7 @@ import (
 )
 
 func RunTest(request RestTestRequest) (*RestTestResult, error) {
-	log.Println("running test for: {}", request)
+	log.Println("running test for url: ", request.Url)
 	testObj, err := request.GetRestTest()
 	if err != nil {
 		return nil, err
@@ -26,7 +26,7 @@ func RunTest(request RestTestRequest) (*RestTestResult, error) {
 	log.Printf("after %vms, got reponse status: %v and response content: %v\n",
 		time.Now().Sub(took).Milliseconds(),
 		response.Status, response.Header.Get("Content-Type"))
-	bodyMatch := string(body) == testObj.Body
+	bodyMatch := testBody(body, testObj.Body)
 	statusMatch := getStatusNumber(response.Status) == testObj.Status
 	result := &RestTestResult{BodyMatch: bodyMatch, StatusMatch: statusMatch}
 	return result, nil
@@ -34,4 +34,8 @@ func RunTest(request RestTestRequest) (*RestTestResult, error) {
 
 func getStatusNumber(rawStatus string) string {
 	return strings.Split(rawStatus, " ")[0]
+}
+
+func testBody(respBody []byte, expectedBody string) bool {
+	return strings.TrimSpace(string(respBody)) == strings.TrimSpace(expectedBody)
 }
