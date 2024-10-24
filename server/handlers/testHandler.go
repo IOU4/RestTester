@@ -23,9 +23,9 @@ func (h2 *TestHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 	defer req.Body.Close()
-	var testRequest core.RestTestRequest
+	var testRequest core.Request
 	if err := json.Unmarshal(reqBody, &testRequest); err != nil {
-		log.Println("coding decode body")
+		log.Println("err decoding body")
 		rw.WriteHeader(http.StatusBadRequest)
 		return
 	}

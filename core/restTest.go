@@ -2,23 +2,25 @@ package core
 
 import (
 	"errors"
+	"fmt"
 	"net/url"
+	"reflect"
 	"regexp"
 )
 
-type RestTestRequest struct {
+type Request struct {
 	Url    string `json:"url"`
 	Status string `json:"status"`
 	Body   string `json:"body"`
 }
 
-type RestTest struct {
+type Test struct {
 	Url    *url.URL
 	Status string
 	Body   string
 }
 
-type RestTestResult struct {
+type Result struct {
 	StatusMatch bool `json:"statusMatch"`
 	BodyMatch   bool `json:"bodyMatch"`
 }
@@ -43,14 +45,18 @@ func getStatus(rawStatus string) string {
 	return rawStatus
 }
 
-func (test *RestTestRequest) GetRestTest() (*RestTest, error) {
+func (test *Request) GetRestTest() (*Test, error) {
 	url, err := getUrl(test.Url)
 	if err != nil {
 		return nil, err
 	}
-	return &RestTest{Url: url, Status: getStatus(test.Status), Body: test.Body}, nil
+	return &Test{Url: url, Status: getStatus(test.Status), Body: test.Body}, nil
 }
 
-type RestTestOutput interface {
-	Output()
+func (result Result) Print() {
+	v := reflect.ValueOf(result)
+	for i := 0; i < v.NumField(); i++ {
+		fieldName := v.Type().Field(i).Name
+		fmt.Printf("%v: %v\n", fieldName, v.Field(i))
+	}
 }

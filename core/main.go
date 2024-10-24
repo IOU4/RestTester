@@ -8,14 +8,14 @@ import (
 	"time"
 )
 
-func RunTest(request RestTestRequest) (*RestTestResult, error) {
+func RunTest(request Request) (*Result, error) {
 	log.Println("running test for url: ", request.Url)
-	testObj, err := request.GetRestTest()
+	test, err := request.GetRestTest()
 	if err != nil {
 		return nil, err
 	}
 	took := time.Now()
-	response, err := http.Get(testObj.Url.String())
+	response, err := http.Get(test.Url.String())
 	if err != nil {
 		return nil, err
 	}
@@ -26,9 +26,9 @@ func RunTest(request RestTestRequest) (*RestTestResult, error) {
 	log.Printf("after %vms, got reponse status: %v and response content: %v\n",
 		time.Now().Sub(took).Milliseconds(),
 		response.Status, response.Header.Get("Content-Type"))
-	bodyMatch := testBody(body, testObj.Body)
-	statusMatch := getStatusNumber(response.Status) == testObj.Status
-	result := &RestTestResult{BodyMatch: bodyMatch, StatusMatch: statusMatch}
+	bodyMatch := testBody(body, test.Body)
+	statusMatch := getStatusNumber(response.Status) == test.Status
+	result := &Result{BodyMatch: bodyMatch, StatusMatch: statusMatch}
 	return result, nil
 }
 
