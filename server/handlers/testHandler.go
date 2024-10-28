@@ -18,14 +18,14 @@ func (h2 *TestHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	}
 	reqBody, err := io.ReadAll(req.Body)
 	if err != nil {
-		log.Println("eror reading body")
+		log.Println(err)
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	defer req.Body.Close()
 	var testRequest core.Request
 	if err := json.Unmarshal(reqBody, &testRequest); err != nil {
-		log.Println("err decoding body")
+		log.Println(err)
 		rw.WriteHeader(http.StatusBadRequest)
 		return
 	}
