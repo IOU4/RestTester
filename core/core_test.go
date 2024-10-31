@@ -17,7 +17,7 @@ func TestRunTest(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !resutl.BodyMatch || !resutl.StatusMatch {
+	if !resutl.Body || !resutl.Status {
 		t.FailNow()
 	}
 }

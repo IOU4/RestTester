@@ -10,13 +10,12 @@ import (
 	"time"
 )
 
-func RunTest(request Request) (*Result, error) {
-	log.Println("running test for url: ", request.Url)
+func RunTest(request *Request) (*Result, error) {
 	test, err := request.GetRestTest()
 	if err != nil {
 		return nil, err
 	}
-	took := time.Now()
+	now := time.Now()
 	response, err := http.Get(test.Url.String())
 	if err != nil {
 		return nil, err
@@ -25,10 +24,13 @@ func RunTest(request Request) (*Result, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("test done after %vms.\n", time.Now().Sub(took).Milliseconds())
-	bodyMatch := testBody(body, test.Body)
+	took := time.Now().Sub(now).Milliseconds()
+	bodyMatch, err := testBody(body, request.Body)
+	if err != nil {
+		return nil, err
+	}
 	statusMatch := getStatusNumber(response.Status) == test.Status
-	result := &Result{BodyMatch: bodyMatch, StatusMatch: statusMatch}
+	result := &Result{Body: bodyMatch, Status: statusMatch, Request: request, Took: took}
 	return result, nil
 }
 
@@ -36,17 +38,24 @@ func getStatusNumber(rawStatus string) string {
 	return strings.Split(rawStatus, " ")[0]
 }
 
-func testBody(respBody []byte, expectedBody string) bool {
-	return strings.TrimSpace(string(respBody)) == strings.TrimSpace(expectedBody)
+func testBody(respBody, expectedBody []byte) (bool, error) {
+	var a, b interface{}
+	if err := json.Unmarshal(respBody, &a); err != nil {
+		return false, err
+	}
+	if err := json.Unmarshal(expectedBody, &b); err != nil {
+		return false, err
+	}
+	return IsSameJSON(a, b), nil
 }
 
-func RunFileTest(path string) ([]*Result, error) {
+func RunFileTest(path string) error {
 	file, err := os.Open(path)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer file.Close()
-	var requests []Request
+	var requests []*Request
 	var data []byte
 	buf := make([]byte, 100)
 	for {
@@ -56,20 +65,20 @@ func RunFileTest(path string) ([]*Result, error) {
 			if err == io.EOF {
 				break
 			}
-			return []*Result{}, err
+			return err
 		}
 	}
 	err = json.Unmarshal(data, &requests)
 	if err != nil {
-		return []*Result{}, err
+		log.Println("unmarshal requests error")
+		return err
 	}
-	var results []*Result
 	for _, request := range requests {
 		result, err := RunTest(request)
 		if err != nil {
-			return []*Result{}, err
+			return err
 		}
-		results = append(results, result)
+		Results = append(Results, result)
 	}
-	return results, nil
+	return nil
 }

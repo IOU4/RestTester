@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"log"
 
 	"ou.emad/cli"
 	"ou.emad/server"
@@ -16,10 +15,8 @@ func main() {
 	fileFlag := flag.String("file", "", "json file containing test scenarios")
 	flag.Parse()
 	if port := *sFlag; port != "" {
-		log.Println("staring server ...")
 		server.Run(port)
 	} else {
-		log.Println("running rest tester for cli args ...")
 		cli.Run(*urlFlag, *statusFlag, *bodyFlag, *fileFlag)
 	}
 }

@@ -9,16 +9,18 @@ import (
 
 func Run(url string, status int, body, file string) {
 	if file != "" {
-		results, err := core.RunFileTest(file)
+		log.Println("running tests from file", file, "...")
+		err := core.RunFileTest(file)
 		if err != nil {
 			log.Fatal(err)
 		}
-		for _, v := range results {
+		for _, v := range core.Results {
 			v.Print()
 		}
 		return
 	}
-	result, err := core.RunTest(core.Request{Url: url, Status: strconv.Itoa(status), Body: body})
+	log.Println("running test for cli args...")
+	result, err := core.RunTest(&core.Request{Url: url, Status: strconv.Itoa(status), Body: []byte(body)})
 	if err != nil {
 		log.Fatal(err)
 	}

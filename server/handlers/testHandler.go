@@ -29,7 +29,7 @@ func (h2 *TestHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	result, err := core.RunTest(testRequest)
+	result, err := core.RunTest(&testRequest)
 	if err != nil {
 		log.Println(err)
 		rw.WriteHeader(http.StatusBadRequest)

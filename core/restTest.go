@@ -1,28 +1,33 @@
 package core
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/url"
-	"reflect"
 	"regexp"
 )
 
+var Results []*Result
+var cursor int
+
 type Request struct {
-	Url    string `json:"url"`
-	Status string `json:"status"`
-	Body   string `json:"body"`
+	Url    string          `json:"url"`
+	Status string          `json:"status"`
+	Body   json.RawMessage `json:"body"`
 }
 
 type Test struct {
 	Url    *url.URL
 	Status string
-	Body   string
+	Body   interface{}
 }
 
 type Result struct {
-	StatusMatch bool `json:"statusMatch"`
-	BodyMatch   bool `json:"bodyMatch"`
+	Request *Request
+	Took    int64
+	Status  bool `json:"statusMatch"`
+	Body    bool `json:"bodyMatch"`
 }
 
 func getUrl(rawUrl string) (*url.URL, error) {
@@ -53,10 +58,19 @@ func (test *Request) GetRestTest() (*Test, error) {
 	return &Test{Url: url, Status: getStatus(test.Status), Body: test.Body}, nil
 }
 
-func (result Result) Print() {
-	v := reflect.ValueOf(result)
-	for i := 0; i < v.NumField(); i++ {
-		fieldName := v.Type().Field(i).Name
-		fmt.Printf("%v: %v\n", fieldName, v.Field(i))
-	}
+func (result *Result) Print() {
+	fmt.Println("[+]", result.Request.Url, ":", result.Took, "ms")
+	fmt.Println("   matched_status:", result.Status)
+	fmt.Println("   matched_body:", result.Body)
+	fmt.Println()
+}
+
+func (result *Result) HasNext() bool {
+	return cursor > len(Results)-1 || cursor < 0
+}
+
+func (result *Result) Next() *Result {
+	res := Results[cursor]
+	cursor++
+	return res
 }
