@@ -1,13 +1,11 @@
 package core
 
 import (
-	"log"
 	"reflect"
 )
 
 func IsSameJSON(a, b any) bool {
 	if reflect.TypeOf(a) != reflect.TypeOf(b) {
-		log.Println("not same type")
 		return false
 	}
 	switch x := a.(type) {

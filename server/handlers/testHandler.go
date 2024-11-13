@@ -13,7 +13,7 @@ type TestHandler struct{}
 
 func (h2 *TestHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	if req.Method != "POST" {
-		rw.WriteHeader(http.StatusUnsupportedMediaType)
+		rw.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
 	reqBody, err := io.ReadAll(req.Body)
@@ -29,9 +29,9 @@ func (h2 *TestHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	result, err := core.RunTest(&testRequest)
-	if err != nil {
-		log.Println(err)
+	result := core.RunTest(&testRequest)
+	if result.Error() != nil {
+		log.Println(result.Error())
 		rw.WriteHeader(http.StatusBadRequest)
 		return
 	}

@@ -9,7 +9,6 @@ import (
 )
 
 var Results []*Result
-var cursor int
 
 type Request struct {
 	Url    string          `json:"url"`
@@ -24,10 +23,15 @@ type Test struct {
 }
 
 type Result struct {
-	Request *Request
-	Took    int64
-	Status  bool `json:"statusMatch"`
-	Body    bool `json:"bodyMatch"`
+	request *Request
+	err     error
+	Took    int64 `json:"took"`
+	Status  bool  `json:"statusMatch"`
+	Body    bool  `json:"bodyMatch"`
+}
+
+func (res *Result) Error() error {
+	return res.err
 }
 
 func getUrl(rawUrl string) (*url.URL, error) {
@@ -59,18 +63,12 @@ func (test *Request) GetRestTest() (*Test, error) {
 }
 
 func (result *Result) Print() {
-	fmt.Println("[+]", result.Request.Url, ":", result.Took, "ms")
+	fmt.Println(result.Took, "ms")
 	fmt.Println("   matched_status:", result.Status)
 	fmt.Println("   matched_body:", result.Body)
 	fmt.Println()
 }
 
-func (result *Result) HasNext() bool {
-	return cursor > len(Results)-1 || cursor < 0
-}
-
-func (result *Result) Next() *Result {
-	res := Results[cursor]
-	cursor++
-	return res
+func (result *Result) PrintUrl() {
+	fmt.Printf("[+] %v: ", result.request.Url)
 }

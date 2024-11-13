@@ -8,15 +8,23 @@ import (
 )
 
 func main() {
-	sFlag := flag.String("s", "", "run local server with specified port.")
+	serverFlag := flag.String("server", "", "run local server with specified port.")
 	urlFlag := flag.String("url", "", "run quick test for specified url.")
 	statusFlag := flag.Int("status", 0, "expected status for quick test.")
 	bodyFlag := flag.String("body", "", "expected body for quick test.")
 	fileFlag := flag.String("file", "", "json file containing test scenarios")
 	flag.Parse()
-	if port := *sFlag; port != "" {
-		server.Run(port)
-	} else {
-		cli.Run(*urlFlag, *statusFlag, *bodyFlag, *fileFlag)
+	switch {
+	case *serverFlag != "":
+		server.Run(*serverFlag)
+		break
+	case *fileFlag != "":
+		cli.RunFromFile(*fileFlag)
+		break
+	case *urlFlag != "" && *statusFlag != 0:
+		cli.Run(*urlFlag, *statusFlag, *bodyFlag)
+		break
+	default:
+		flag.Usage()
 	}
 }
