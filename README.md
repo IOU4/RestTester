@@ -4,7 +4,7 @@ simple way to test rest apis
 # Usage
 ## json file:
 add your tests to a json file of the form:
-```json
+```jsonc
 [
     {
         "url":"",
